@@ -1,0 +1,119 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Posts')
+
+@push('style')
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="{{ asset('library/selectric/public/selectric.css') }}">
+@endpush
+
+@section('main')
+    <div class="main-content">
+        <section class="section">
+            <div class="section-header">
+                <h1>Jenis Sampah Plastik</h1>
+                <div class="section-header-button">
+                    <a href="{{ route('sampah-plastik.create') }}" class="btn btn-primary">Tambah Data</a>
+                </div>
+                <div class="section-header-breadcrumb">
+                    <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
+                    <div class="breadcrumb-item">Jenis Sampah</div>
+                    <div class="breadcrumb-item">All Plastik</div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mb-0">
+                            <div class="card-body">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" href="{{ route('sampah-plastik.index') }}">All <span
+                                                class="badge badge-white">{{ $totalData }}</span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Semua Data</h4>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="float-left">
+                                    <form method="GET" action="{{ route('sampah-plastik.index') }}">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Cari Berat Plastik..."
+                                                name="berat">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="clearfix mb-3"></div>
+
+                                <div class="table-responsive">
+                                    <table class="table-striped table">
+                                        <tr>
+
+                                            <th>No.</th>
+                                            <th>Berat (gr)</th>
+                                            <th>Nominal</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                        @foreach ($allData as $data)
+                                            <tr>
+                                                <td>
+                                                    {{ ++$i }}
+                                                </td>
+                                                <td>{{ $data->berat }}
+                                                </td>
+                                                <td>Rp. {{ number_format($data->nominal, 0, ',', '.') }}</td>
+                                                <td>
+                                                    <form action="{{ route('sampah-plastik.destroy', $data->id) }}"
+                                                        method="POST">
+                                                        <a type="button" class="btn btn-primary" href="{{ route('sampah-plastik.edit', $data->id) }}"><i class="fa-regular fa-pen-to-square"></i></a>
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
+                                                    </form>
+                                                </td>
+
+                                            </tr>
+                                        @endforeach
+
+                                    </table>
+                                </div>
+                                <div class="float-right">
+                                    <nav>
+                                        <ul class="pagination">
+                                            {{ $allData->links() }}
+                                        </ul>
+                                    </nav>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+@endsection
+
+@push('scripts')
+    <!-- JS Libraies -->
+    <script src="{{ asset('library/selectric/public/jquery.selectric.min.js') }}"></script>
+
+    <!-- Page Specific JS File -->
+    <script src="{{ asset('js/page/features-data.js') }}"></script>
+@endpush
