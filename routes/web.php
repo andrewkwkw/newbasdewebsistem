@@ -26,17 +26,15 @@ Route::group(['middleware' => 'guest'], function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::middleware('is.role:1')->group(function () {
-    Route::get('admin/dashboard', [MasterController::class, 'index'])->name('admin.dashboard');
-    Route::post('/users/{id}/toggle-approve', [MasterController::class, 'toggleApprove'])->name('users.toggleApprove');
-    Route::get('/masuk', [MasterController::class, 'indexmasuk'])->name('masuk');
-    Route::post('/users', [MasterController::class, 'createmasuk'])->name('cmasuk');
-    Route::get('/keluar', [MasterController::class, 'indexkeluar'])->name('keluar');
-    Route::post('/ckeluar', [MasterController::class, 'createkeluar'])->name('ckeluar');
-    Route::get('admin/profile/{id}', [MasterController::class, 'indexprofile'])->name('admin.profile.index');
-    Route::put('admin/profile/{id}', [MasterController::class, 'updateProfile'])->name('admin.profile.update');
-});
+        Route::get('admin/dashboard', [MasterController::class, 'index'])->name('admin.dashboard');
+        Route::post('/users/{id}/toggle-approve', [MasterController::class, 'toggleApprove'])->name('users.toggleApprove');
+        Route::get('/masuk', [MasterController::class, 'indexmasuk'])->name('masuk');
+        Route::post('/users', [MasterController::class, 'createmasuk'])->name('cmasuk');
+        Route::get('/keluar', [MasterController::class, 'indexkeluar'])->name('keluar');
+        Route::post('/ckeluar', [MasterController::class, 'createkeluar'])->name('ckeluar');
+    });
 
-Route::middleware('is.role:1')->group(function () {
+    Route::middleware('is.role:1')->group(function () {
         Route::get('/tambahjenissampah', [JenisSampahController::class, 'index'])->name('jenis_sampah');
         Route::get('/createjenis', [JenisSampahController::class, 'CreateJenis'])->name('create_jenis');
         Route::post('/store_jenis', [JenisSampahController::class, 'store'])->name('jenis-sampah');
@@ -58,7 +56,7 @@ Route::middleware('is.role:1')->group(function () {
         Route::get('/users/{id}/keluar-keuanganku', [UserController::class, 'lihatKeuanganKeluar'])->name('users_uangkeluar');
         Route::resource('/admin/jenis-sampah', JenisSampahController::class)->names('jenis_sampah');
         Route::get('/admin/setor-saldo/create', [SetorSaldoController::class, 'create'])->name('setor_saldo.create');
-        Route::post('/admin/setor-saldo', [SetorSaldoController::class, 'store'])->name('makedata'); 
+        Route::post('/admin/setor-saldo', [SetorSaldoController::class, 'store'])->name('makedata');
         Route::get('/admin/users', [JenisSampahController::class, 'AdminUsers'])->name('admin.users.index');
         Route::delete('/admin/users/{id}/sampah', [JenisSampahController::class, 'destroySampah'])->name('admin.users.sampah.destroy');
         Route::get('/profile/{id}/edit', [UserController::class, 'editProfile'])->name('users.profile.edit');
@@ -71,7 +69,7 @@ Route::middleware('is.role:1')->group(function () {
         Route::get('/admin/laporan/pdf', [SetorSaldoController::class, 'cetakPdf'])->name('admin.laporan.pdf');
     });
 
-Route::middleware('is.role:2')->group(function () {
+    Route::middleware('is.role:2')->group(function () {
         Route::get('user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
         Route::get('/profile/{id}/edit', [UserController::class, 'editProfile'])->name('users.profile.edit');
         Route::put('/users/profile/{id}', [UserController::class, 'updateProfile'])->name('users.profile.update');

@@ -1,8 +1,17 @@
-<footer class="main-footer">
-    <div class="footer-left">
-        <div class="bullet"></div> 
-    </div>
-    <div class="footer-right">
-        1.0.0
+<footer class="bg-white border-t border-gray-100 mt-auto py-6">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+            <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                <span class="font-bold text-gray-700 tracking-tight">BASADE<span
+                        class="text-xs ml-1 font-medium bg-gray-100 px-1.5 py-0.5 rounded text-gray-400">ADMIN</span></span>
+                <span class="mx-2 text-gray-300">|</span>
+                <span>Bank Sampah Desa System</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <p>&copy; {{ date('Y') }} All Rights Reserved</p>
+                <div class="hidden md:block w-px h-4 bg-gray-300"></div>
+                <span class="text-xs font-mono bg-gray-50 px-2 py-1 rounded text-gray-400">v1.0.0</span>
+            </div>
+        </div>
     </div>
 </footer>

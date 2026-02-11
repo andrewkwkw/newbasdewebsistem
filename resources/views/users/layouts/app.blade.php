@@ -3,76 +3,49 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"
-        name="viewport">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>@yield('title') &mdash; BASADE</title>
     <link rel="shortcut icon" href="{{asset('img/logo.png')}}" type="image/x-icon">
 
-    <!-- General CSS Files -->
-    <link rel="stylesheet"
-        href="{{ asset('library/bootstrap/dist/css/bootstrap.min.css') }}">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
         integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer" />
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     @stack('style')
 
-    <!-- Template CSS -->
-    <link rel="stylesheet"
-        href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet"
-        href="{{ asset('css/components.css') }}">
-
-    <!-- Start GA -->
-    <script async
-        src="https://www.googletagmanager.com/gtag/js?id=UA-94034622-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-94034622-3');
-    </script>
-    <!-- END GA -->
-</head>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
-    <div id="app">
-        <div class="main-wrapper">
-            <!-- Header -->
-            @include('users.components.header')
+<body class="bg-gray-50 font-sans antialiased text-gray-800">
+    <div id="app" class="min-h-screen flex flex-col">
 
-            <!-- Sidebar -->
-            @include('users.components.sidebar')
+        <!-- Header -->
+        @include('users.components.header')
 
-            <!-- Content -->
-            @yield('main')
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col pt-20" id="main-content">
+
+            <!-- Main Content -->
+            <main class="flex-1 container mx-auto px-6 py-6">
+                @yield('main')
+            </main>
 
             <!-- Footer -->
             @include('users.components.footer')
         </div>
     </div>
 
-    <!-- General JS Scripts -->
+    <!-- Scripts -->
     <script src="{{ asset('library/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('library/popper.js/dist/umd/popper.js') }}"></script>
     <script src="{{ asset('library/tooltip.js/dist/umd/tooltip.js') }}"></script>
-    <script src="{{ asset('library/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+
     <script src="{{ asset('library/jquery.nicescroll/dist/jquery.nicescroll.min.js') }}"></script>
     <script src="{{ asset('library/moment/min/moment.min.js') }}"></script>
-    <script src="{{ asset('js/stisla.js') }}"></script>
 
     @stack('scripts')
-
-    <!-- Template JS File -->
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    <script src="{{ asset('js/custom.js') }}"></script>
 </body>
 
 </html>
