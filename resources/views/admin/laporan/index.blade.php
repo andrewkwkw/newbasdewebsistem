@@ -48,49 +48,37 @@
         </div>
 
         <!-- Stats Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Total Poin Card -->
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Total Transaksi Card -->
             <div
                 class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl p-6 shadow-xl shadow-amber-100 relative overflow-hidden group">
                 <div
                     class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700">
                 </div>
-                <div class="relative z-10 flex items-center justify-between">
+                <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between">
                     <div>
                         <h3 class="text-white/80 text-xs font-bold uppercase tracking-widest">Total Poin Terkumpul</h3>
-                        <div class="flex items-baseline mt-2">
-                            <span class="text-white text-3xl font-bold tracking-tight">
-                                {{ number_format($totalPoin ?? 0, 0, ',', '.') }}
-                            </span>
-                            <span class="text-white/70 text-sm font-bold ml-2">Poin</span>
+                        <div class="flex items-baseline mt-2 space-x-6">
+                            <!-- Berat/Poin -->
+                            <div>
+                                <span class="text-white text-3xl font-bold tracking-tight">
+                                    {{ number_format($totalPoin ?? 0, 0, ',', '.') }}
+                                </span>
+                                <span class="text-white/70 text-sm font-bold ml-1">Poin</span>
+                            </div>
+                            
+                            <!-- Equivalent Rp -->
+                            <div>
+                                <span class="text-white/70 text-sm font-bold mr-1">= Rp</span>
+                                <span class="text-white text-3xl font-bold tracking-tight">
+                                    {{ number_format($totalRp ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div
-                        class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20">
-                        <i class="fas fa-star text-white text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Sampah Card -->
-            <div
-                class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 shadow-xl shadow-emerald-100 relative overflow-hidden group">
-                <div
-                    class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700">
-                </div>
-                <div class="relative z-10 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-white/80 text-xs font-bold uppercase tracking-widest">Total Sampah Terolah</h3>
-                        <div class="flex items-baseline mt-2">
-                            <span class="text-white text-3xl font-bold tracking-tight">
-                                {{ number_format($totalKg ?? 0, 0, ',', '.') }}
-                            </span>
-                            <span class="text-white/70 text-sm font-bold ml-2">Pcs / Kg</span>
-                        </div>
-                    </div>
-                    <div
-                        class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20">
-                        <i class="fas fa-recycle text-white text-2xl"></i>
+                        class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mt-4 sm:mt-0">
+                        <i class="fas fa-coins text-white text-2xl"></i>
                     </div>
                 </div>
             </div>
@@ -115,7 +103,7 @@
                                     Kategori</th>
                                 <th
                                     class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 text-right">
-                                    Poin</th>
+                                    Poin & Uang</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -125,8 +113,10 @@
                                         <span class="text-sm font-bold text-gray-800">{{ $item['nama_sampah'] }}</span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <span
-                                            class="text-sm font-bold text-amber-600">{{ number_format($item['total_poin'], 0, ',', '.') }}</span>
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-sm font-bold text-amber-600">{{ number_format($item['total_poin'], 0, ',', '.') }} Poin</span>
+                                            <span class="text-xs text-gray-500 font-medium">Rp {{ number_format($item['total_uang'], 0, ',', '.') }}</span>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -157,7 +147,7 @@
                                     Nama Nasabah</th>
                                 <th
                                     class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 text-right">
-                                    Total Poin</th>
+                                    Total Poin & Uang</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -173,8 +163,10 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <span
-                                            class="text-sm font-bold text-amber-600">{{ number_format($item['total_poin'], 0, ',', '.') }}</span>
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-sm font-bold text-amber-600">{{ number_format($item['total_poin'], 0, ',', '.') }} Poin</span>
+                                            <span class="text-xs text-gray-500 font-medium">Rp {{ number_format($item['total_uang'], 0, ',', '.') }}</span>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -204,60 +196,55 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50/50">
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                                Tanggal</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                                Nasabah</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                                Jenis & Jumlah</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 text-right">
-                                Perolehan Poin</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">Tanggal</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">Nasabah</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">Jenis Sampah</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 text-right">Jumlah Setor</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 text-right">Uang Diterima</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
-                        @php
-                            $groupedTransactions = $transaksi->groupBy(function ($item) {
-                                return $item->created_at->format('Y-m-d') . '-' . $item->user_id;
-                            });
-                        @endphp
-
-                        @forelse ($groupedTransactions as $group)
-                            @php
-                                $firstItem = $group->first();
-                                $dailyPoints = $group->sum('points');
-                                $dailyAmount = $group->sum('amount');
-                            @endphp
+                        @forelse ($transaksi as $t)
                             <tr class="hover:bg-gray-50/30 transition-colors">
                                 <td class="px-6 py-4 text-sm font-medium text-gray-500">
-                                    {{ $firstItem->created_at->translatedFormat('d M Y') }}
+                                    {{ $t->created_at->translatedFormat('d M Y, H:i') }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm font-bold text-gray-800">{{ $firstItem->user->fullname ?? $firstItem->user->name }}</span>
+                                    <span class="text-sm font-bold text-gray-800">{{ $t->user->fullname ?? $t->user->name ?? 'Warga' }}</span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase">Botol
-                                            Plastik</span>
-                                        <span class="text-xs text-gray-400 font-medium">{{ $dailyAmount }} Pcs</span>
+                                    <div class="flex flex-col space-y-1.5 items-start">
+                                        <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase">
+                                            {{ $t->jenisSampah->nama_sampah ?? '-' }}
+                                        </span>
+                                        @if(str_contains(strtolower($t->description), 'tukar'))
+                                            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded uppercase flex items-center">
+                                                <i class="fas fa-gift mr-1"></i> Tukar Poin
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded uppercase flex items-center">
+                                                <i class="fas fa-balance-scale mr-1"></i> Setor Manual
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-right px-1">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-600">
-                                        +{{ number_format($dailyPoints, 0, ',', '.') }}
+                                <td class="px-6 py-4 text-right">
+                                    <span class="inline-flex items-center text-sm font-bold text-gray-800">
+                                        {{ $t->berat }}
+                                        <span class="ml-1 text-xs text-gray-500 font-medium">
+                                            {{ str_contains(strtolower($t->description), 'tukar') ? 'Poin' : 'Kg' }}
+                                        </span>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-600">
+                                        Rp {{ number_format($t->amount, 0, ',', '.') }}
                                     </span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">Belum ada transaksi
-                                    harian.</td>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-400 italic text-sm">Belum ada transaksi harian.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -267,18 +254,7 @@
     </div>
 
     <style>
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 @endsection

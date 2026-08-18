@@ -8,7 +8,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
-                <p class="text-sm text-gray-500 mt-1">Kelola saldo dan pantau aktivitas pengguna Bank Sampah Desa.</p>
+                <p class="text-sm text-gray-500 mt-1">Kelola saldo dan pantau aktivitas pengguna PT Resik Prima Teknolojia.</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span
@@ -300,7 +300,7 @@
 
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
         function closeModal() {
             document.getElementById('updateSaldoModal').classList.add('hidden');
@@ -333,4 +333,4 @@
             });
         });
     </script>
-@endsection
+@endpush

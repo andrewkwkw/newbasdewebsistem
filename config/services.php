@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'smart_trash' => [
+        'url' => env('EXISTING_WEB_URL'),
+        'token' => env('API_WEB_TOKEN'),
+    ],
+
 ];

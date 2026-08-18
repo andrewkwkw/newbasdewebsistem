@@ -69,14 +69,16 @@ class JenisSampahController extends Controller
     public function store(Request $request)
 {
     $request->validate([
-        'nama_sampah'  => 'required|string|max:255|unique:jenis_sampah,nama_sampah',
-        'harga_per_kg' => 'required|numeric|min:0',
+        'nama_sampah'    => 'required|string|max:255|unique:jenis_sampah,nama_sampah',
+        'harga_per_kg'   => 'required|numeric|min:0',
+        'harga_per_poin' => 'required|numeric|min:0',
     ]);
 
     JenisSampah::create([
-        'nama_sampah'  => $request->nama_sampah,
-        'harga_per_kg' => $request->harga_per_kg,
-        'admin_id'     => Auth::id(),
+        'nama_sampah'    => $request->nama_sampah,
+        'harga_per_kg'   => $request->harga_per_kg,
+        'harga_per_poin' => $request->harga_per_poin,
+        'admin_id'       => Auth::id(),
     ]);
 
     return redirect()->route('jenis_sampah.index')
@@ -107,8 +109,9 @@ class JenisSampahController extends Controller
 
         // VALIDASI
         $request->validate([
-            'nama_sampah'  => 'required|string|max:255|unique:jenis_sampah,nama_sampah,' . $jenisSampah->id,
-            'harga_per_kg' => 'required|numeric|min:0',
+            'nama_sampah'    => 'required|string|max:255|unique:jenis_sampah,nama_sampah,' . $jenisSampah->id,
+            'harga_per_kg'   => 'required|numeric|min:0',
+            'harga_per_poin' => 'required|numeric|min:0',
         ]);
 
         // HARGA LAMA DAN BARU
@@ -117,8 +120,9 @@ class JenisSampahController extends Controller
 
         // UPDATE NAMA & HARGA SAJA DULU
         $jenisSampah->update([
-            'nama_sampah'  => $request->nama_sampah,
-            'harga_per_kg' => $hargaBaru,
+            'nama_sampah'    => $request->nama_sampah,
+            'harga_per_kg'   => $hargaBaru,
+            'harga_per_poin' => $request->harga_per_poin,
         ]);
 
         // JIKA HARGA TIDAK BERUBAH, SELESAI
@@ -274,9 +278,11 @@ public function updates(Request $request, $id)
                     $user->save();
 
                     Transaction::create([
-                        'user_id' => Auth::id(),
+                        'user_id' => $user->id,
+                        'jenis_sampah_id' => $jenisSampah->id,
+                        'berat' => $beratKg,
                         'type' => 'credit',
-                        'amount' => $totalNominal,
+                        'amount' => $totalNominal * 0.96,
                         'description' => "Setor {$jenisSampah->nama_sampah} seberat $beratKg Kg",
                     ]);
                 }

@@ -1,0 +1,38 @@
+﻿version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: basade-web
+    container_name: basade_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=basade_db
+      - DB_USERNAME=basade_user
+      - DB_PASSWORD=basade_pass
+
+  db:
+    image: mysql:8.0
+    container_name: basade_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: basade_db
+      MYSQL_USER: basade_user
+      MYSQL_PASSWORD: basade_pass
+      MYSQL_ROOT_PASSWORD: basade_root_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

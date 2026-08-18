@@ -6,7 +6,7 @@
                 <!-- Logo & Brand -->
                 <a href="{{ route('user.dashboard') }}" class="flex items-center space-x-2 mr-6">
                     <img src="{{ asset('img/logo.webp') }}" class="h-8 w-auto" alt="Logo">
-                    <span class="text-xl font-bold text-gray-800 tracking-tight">BASADE</span>
+                    <span class="text-xl font-bold text-gray-800 tracking-tight">{{ env('APP_NAME') }}</span>
                 </a>
 
                 <!-- Navigation Links (Desktop) -->

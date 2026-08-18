@@ -249,4 +249,14 @@ class UserController extends Controller
         return redirect()->route('users.profile.edit', $id)
                         ->with('success', 'Profil berhasil diperbarui.');
     }
+
+    public function history()
+    {
+        $userId = auth()->id();
+        $trashLogs = \App\Models\TrashLog::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+            
+        return view('users.history', compact('trashLogs'));
+    }
 }

@@ -15,10 +15,8 @@
                     class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all transform active:scale-95">
                     <i class="fas fa-plus mr-2"></i> Tambah Jenis
                 </a>
-                <a href="{{ route('viewcreate') }}"
-                    class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-100 transition-all transform active:scale-95">
-                    <i class="fas fa-plus-circle mr-2"></i> Tambah Data Setoran
-                </a>
+
+
             </div>
         </div>
 

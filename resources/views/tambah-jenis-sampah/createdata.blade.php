@@ -1,164 +1,187 @@
 @extends('admin.layouts.app')
-@section('title', 'Input Data Sampah')
 
-@push('style')
-    {{-- CSS Library --}}
-    <link rel="stylesheet" href="{{ asset('library/selectric/public/selectric.css') }}">
-    <link rel="stylesheet" href="{{ asset('library/select2/dist/css/select2.min.css') }}">
-@endpush
+@section('title', 'Setor & Tukar Poin')
 
 @section('main')
-<div class="main-content">
-    <section class="section">
-
-        {{-- HEADERS --}}
-        <div class="section-header">
-            <div class="section-header-back">
-                <a href="{{ route('jenis_sampah.index') }}" class="btn btn-icon">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
+    <div class="animate-fade-in space-y-8">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center space-x-3 mb-2">
+                    <a href="{{ route('jenis_sampah.index') }}" class="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Setor & Tukar Poin</h1>
+                </div>
+                <p class="text-sm text-gray-500">Pilih mode setoran karungan (Kg) atau penukaran poin dari Smart Trash.</p>
             </div>
-            <h1>Halaman Input Data Sampah</h1>
-            <div class="section-header-breadcrumb">
-                <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item"><a href="{{ route('jenis_sampah.index') }}">Jenis Sampah</a></div>
-                <div class="breadcrumb-item">Input Data</div>
+            <div class="flex items-center space-x-3 text-sm text-gray-500">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-indigo-600 font-medium">Dashboard</a>
+                <span>/</span>
+                <a href="{{ route('jenis_sampah.index') }}" class="hover:text-indigo-600 font-medium">Jenis Sampah</a>
+                <span>/</span>
+                <span class="text-gray-800 font-medium">Setor & Tukar</span>
             </div>
         </div>
 
-        <div class="section-body">
-            {{-- ALERT SUCCESS/ERROR (Opsional, jika ada session) --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible show fade">
-                    <div class="alert-body">
-                        <button class="close" data-dismiss="alert"><span>&times;</span></button>
-                        {{ session('success') }}
-                    </div>
+        {{-- ALERT --}}
+        @if (session('success'))
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex items-center justify-between shadow-sm animate-slide-in">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-emerald-500 mr-3 text-lg"></i>
+                    <p class="text-sm text-emerald-800 font-medium">{{ session('success') }}</p>
                 </div>
-            @endif
+                <button type="button" class="text-emerald-500 hover:text-emerald-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible show fade">
-                    <div class="alert-body">
-                        <button class="close" data-dismiss="alert"><span>&times;</span></button>
-                        <ul>
+        @if (session('error'))
+            <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-xl flex items-center justify-between shadow-sm animate-slide-in">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-rose-500 mr-3 text-lg"></i>
+                    <p class="text-sm text-rose-800 font-medium">{{ session('error') }}</p>
+                </div>
+                <button type="button" class="text-rose-500 hover:text-rose-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-xl shadow-sm animate-slide-in">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle text-rose-500 mr-3 text-lg mt-0.5"></i>
+                    <div>
+                        <h3 class="text-sm text-rose-800 font-bold mb-1">Terdapat Kesalahan:</h3>
+                        <ul class="list-disc list-inside text-sm text-rose-700 space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 </div>
-            @endif
+            </div>
+        @endif
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        
-                        {{-- =============================
-                             FORM INPUT DATA
-                        ============================== --}}
-                        <div class="card-header">
-                            <h4>Form Setor Sampah</h4>
-                        </div>
-                        
-                        <div class="card-body">
-                            {{-- FIX 1: Tambahkan ID pada form --}}
-                            <form method="POST" action="{{ route('makedata') }}" id="formTransaksi">
-                                @csrf
-
-                                {{-- 1. PILIH USER --}}
-                                <div class="form-group">
-                                    <label>Pilih User <span class="text-danger">*</span></label>
-                                    {{-- FIX 2: Hapus 'multiple', tapi biarkan name array user_ids[] agar controller tetap valid --}}
-                                    <select name="user_ids[]" class="form-control select2" required>
-                                        <option value="" disabled selected>-- Cari User Penerima --</option>
-                                        @foreach($user as $u)
-                                            <option value="{{ $u->id }}">{{ $u->username }} - {{ $u->fullname }}</option>
-                                        @endforeach
-                                    </select>
-                                    <small class="text-muted">Pilih satu user yang menyetor sampah.</small>
-                                </div>
-
-                                {{-- 2. PILIH JENIS SAMPAH --}}
-                                <div class="form-group">
-                                    <label for="jenis_sampah_id">Pilih Jenis Sampah <span class="text-danger">*</span></label>
-                                    <select name="jenis_sampah_id" id="jenis_sampah_id" class="form-control selectric" required>
-                                        <option value="" disabled selected>-- Pilih Sampah --</option>
-                                        @foreach ($jenisSampah as $sampah)
-                                            <option value="{{ $sampah->id }}" data-harga="{{ $sampah->harga_per_kg }}">
-                                                {{ $sampah->nama_sampah }} (Rp {{ number_format($sampah->harga_per_kg, 0, ',', '.') }}/Kg)
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                {{-- 3. INPUT BERAT --}}
-                                <div class="form-group">
-                                    <label for="jml_sampah_perkg">Berat Sampah (Kg) <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.01" name="jml_sampah_perkg" id="jml_sampah_perkg" class="form-control" placeholder="0" required>
-                                        <div class="input-group-append">
-                                            <div class="input-group-text">Kg</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- 4. HASIL NOMINAL (READONLY) --}}
-                                <div class="form-group">
-                                    <label>Total Nominal (User Terima 96%)</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text">Rp</div>
-                                        </div>
-                                        <input type="text" id="nominal" class="form-control font-weight-bold text-success" readonly placeholder="0">
-                                    </div>
-                                    <small class="form-text text-muted">Nominal otomatis muncul saat jenis sampah dan berat diisi.</small>
-                                </div>
-
-                                {{-- TOMBOL SUBMIT --}}
-                                <div class="form-group text-right">
-                                    {{-- FIX 3: Tambahkan ID btnSubmit --}}
-                                    <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-save"></i> Simpan Transaksi
-                                    </button>
-                                </div>
-
-                            </form>
-                        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Card -->
+            <div class="{{ isset($latestTransaction) ? 'lg:col-span-2' : 'lg:col-span-3' }}">
+                <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    
+                    <!-- TAB BUTTONS -->
+                    <div class="flex bg-gray-100 p-1 rounded-2xl mb-8">
+                        <button type="button" id="tabPoin" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all shadow-sm bg-white text-indigo-600">
+                            <i class="fas fa-gift mr-2"></i> Tukar Poin Smart Trash
+                        </button>
+                        <button type="button" id="tabKg" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all text-gray-500 hover:text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-balance-scale mr-2"></i> Setor Manual (Kg)
+                        </button>
                     </div>
+
+                    <form method="POST" action="{{ route('makedata') }}" id="formTransaksi" class="space-y-5">
+                        @csrf
+                        <input type="hidden" name="tipe_setoran" id="tipe_setoran" value="poin">
+
+                        <!-- 1. PILIH USER -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Warga <span class="text-rose-500">*</span></label>
+                            <select name="user_ids[]" id="user_id" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium" required>
+                                <option value="" disabled selected>-- Cari Warga --</option>
+                                @foreach($user as $u)
+                                    <option value="{{ $u->id }}" data-poin="{{ $u->points ?? 0 }}">{{ $u->username }} - {{ $u->fullname }}</option>
+                                @endforeach
+                            </select>
+                            
+                            <!-- Sisa Poin Indicator (Only show on Poin Tab) -->
+                            <div id="sisa_poin_container" class="mt-2 text-sm text-gray-500 hidden">
+                                Sisa Poin Warga Ini: <strong id="sisa_poin_label" class="text-indigo-600 text-lg">0 Poin</strong>
+                            </div>
+                        </div>
+
+                        <!-- 2. PILIH JENIS SAMPAH -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Jenis Sampah <span class="text-rose-500">*</span></label>
+                            <select name="jenis_sampah_id" id="jenis_sampah_id" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium" required>
+                                <option value="" disabled selected>-- Pilih Jenis --</option>
+                                @foreach ($jenisSampah as $sampah)
+                                    <option value="{{ $sampah->id }}" 
+                                            data-harga-kg="{{ $sampah->harga_per_kg }}"
+                                            data-harga-poin="{{ $sampah->harga_per_poin }}">
+                                        {{ $sampah->nama_sampah }} (Rp {{ number_format($sampah->harga_per_poin, 0, ',', '.') }}/Poin | Rp {{ number_format($sampah->harga_per_kg, 0, ',', '.') }}/Kg)
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- 3. INPUT JUMLAH -->
+                        <div>
+                            <label id="label_input_jumlah" class="block text-sm font-bold text-gray-700 mb-2">Poin yang Ditukar <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <input type="number" step="0.01" name="jml_sampah" id="jml_sampah" class="block w-full pl-4 pr-16 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="0" required>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <span id="satuan_input_jumlah" class="text-gray-500 font-bold">Poin</span>
+                                </div>
+                            </div>
+                            <button type="button" id="btnMaxPoin" class="mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded hidden">Tukar Semua Poin</button>
+                        </div>
+
+                        <!-- 4. HASIL NOMINAL -->
+                        <div class="pt-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Total Nominal yang Ditambahkan ke Saldo</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                    <span class="text-emerald-600 font-bold text-lg">Rp</span>
+                                </div>
+                                <input type="text" id="nominal" class="block w-full pl-14 pr-4 py-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 font-extrabold text-xl focus:outline-none" readonly placeholder="0">
+                            </div>
+                            <p id="keterangan_nominal" class="text-xs text-gray-400 mt-2 font-medium"><i class="fas fa-info-circle mr-1"></i>Otomatis dihitung: (Jumlah Poin) x (Harga per 1 Poin).</p>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" id="btnSubmit" class="w-full inline-flex items-center justify-center px-6 py-4 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]">
+                                <i class="fas fa-check-circle mr-2 text-lg"></i> Proses Transaksi
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            {{-- =============================
-                 CARD TRANSAKSI TERAKHIR
-            ============================== --}}
+            <!-- Card Transaksi Terakhir -->
             @if(isset($latestTransaction))
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card card-warning">
-                        <div class="card-header">
-                            <h4>Transaksi Terakhir User Ini</h4>
-                            <div class="card-header-action">
-                                <button data-toggle="modal" data-target="#editTransaksiModal" class="btn btn-warning btn-icon icon-left">
-                                    <i class="fas fa-edit"></i> Edit Transaksi Ini
-                                </button>
+            <div class="lg:col-span-1">
+                <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 md:p-8 shadow-xl text-white relative overflow-hidden h-full flex flex-col justify-between group">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                                <i class="fas fa-history text-white text-xl"></i>
                             </div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">Terbaru</span>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <strong>Jenis Sampah:</strong><br> 
-                                    {{ $latestTransaction->jenisSampah->nama_sampah }}
-                                </div>
-                                <div class="col-md-4">
-                                    <strong>Berat:</strong><br> 
-                                    {{ $latestTransaction->berat }} Kg
-                                </div>
-                                <div class="col-md-4">
-                                    <strong>Total Uang Diterima:</strong><br> 
-                                    <span class="text-success font-weight-bold">
-                                        Rp {{ number_format($latestTransaction->amount, 0, ',', '.') }}
-                                    </span>
+                        
+                        <h3 class="text-white/90 text-sm font-bold mb-5 tracking-wide">Riwayat Setoran Warga Ini</h3>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
+                                <p class="text-xs text-white/70 uppercase tracking-wider mb-1">User</p>
+                                <p class="font-bold text-lg">{{ $latestTransaction->user->fullname ?? 'Unknown' }}</p>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
+                                <p class="text-xs text-white/70 uppercase tracking-wider mb-1">Jenis Sampah</p>
+                                <p class="font-bold text-lg">{{ $latestTransaction->jenisSampah->nama_sampah ?? '-' }}</p>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
+                                <p class="text-xs text-white/70 uppercase tracking-wider mb-1">Kuantitas</p>
+                                <p class="font-bold text-lg">{{ $latestTransaction->berat }}</p>
+                            </div>
+                            <div class="bg-white/20 p-5 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner mt-2">
+                                <p class="text-xs text-white/90 uppercase tracking-wider mb-1">Total Diberikan</p>
+                                <div class="flex items-baseline">
+                                    <span class="text-white/80 font-bold mr-1">Rp</span>
+                                    <span class="font-extrabold text-3xl tracking-tight">{{ number_format($latestTransaction->amount, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -166,131 +189,139 @@
                 </div>
             </div>
             @endif
-
-        </div>
-    </section>
-</div>
-
-{{-- =============================
-     MODAL EDIT TRANSAKSI
-============================= --}}
-@if(isset($latestTransaction))
-<div class="modal fade" id="editTransaksiModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title text-dark">Edit Transaksi Terakhir</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            
-            <form action="{{ route('transaksi.update', $latestTransaction->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Jenis Sampah</label>
-                        <select name="jenis_sampah_id" class="form-control selectric">
-                            @foreach ($jenisSampah as $js)
-                                <option value="{{ $js->id }}" {{ $latestTransaction->jenis_sampah_id == $js->id ? 'selected' : '' }}>
-                                    {{ $js->nama_sampah }} (Rp {{ number_format($js->harga_per_kg, 0, ',', '.') }}/Kg)
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Berat Sampah (Kg)</label>
-                        <input type="number" step="0.01" name="berat" class="form-control" value="{{ $latestTransaction->berat }}" required>
-                    </div>
-                </div>
-
-                <div class="modal-footer bg-whitesmoke br">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
-@endif
 
+    <style>
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-slide-in { animation: slideIn 0.4s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 @endsection
 
-{{-- =============================
-     JAVASCRIPT SECTION (FIXED)
-============================= --}}
-@section('scripts')
-    {{-- Load Library --}}
-    <script src="{{ asset('library/selectric/public/jquery.selectric.min.js') }}"></script>
-    <script src="{{ asset('library/select2/dist/js/select2.full.min.js') }}"></script>
-
+@push('scripts')
     <script>
         $(document).ready(function() {
-            console.log("Script Loaded. Protection Active.");
+            let mode = 'poin'; // default mode
+            let maxPoin = 0;
 
-            // 1. FUNGSI HITUNG TOTAL
-            function hitungTotal() {
-                // Ambil harga dari data-attribute
-                let selectedOption = $('#jenis_sampah_id option:selected');
-                let rawHarga = selectedOption.data('harga'); 
+            // --- UI TAB LOGIC ---
+            function setMode(newMode) {
+                mode = newMode;
+                $('#tipe_setoran').val(mode);
+                $('#jml_sampah').val('');
+                hitungTotal();
+
+                if (mode === 'poin') {
+                    // Styling Tabs
+                    $('#tabPoin').removeClass('text-gray-500 hover:text-gray-700 hover:bg-gray-50').addClass('bg-white text-indigo-600 shadow-sm');
+                    $('#tabKg').removeClass('bg-white text-indigo-600 shadow-sm').addClass('text-gray-500 hover:text-gray-700 hover:bg-gray-50');
+                    
+                    // UI Elements
+                    $('#label_input_jumlah').html('Poin yang Ditukar <span class="text-rose-500">*</span>');
+                    $('#satuan_input_jumlah').text('Poin');
+                    $('#keterangan_nominal').html('<i class="fas fa-info-circle mr-1"></i>Otomatis dihitung: (Jumlah Poin) x (Harga per 1 Poin).');
+                    $('#sisa_poin_container').removeClass('hidden');
+                    $('#btnMaxPoin').removeClass('hidden');
+                } else {
+                    // Styling Tabs
+                    $('#tabKg').removeClass('text-gray-500 hover:text-gray-700 hover:bg-gray-50').addClass('bg-white text-indigo-600 shadow-sm');
+                    $('#tabPoin').removeClass('bg-white text-indigo-600 shadow-sm').addClass('text-gray-500 hover:text-gray-700 hover:bg-gray-50');
+                    
+                    // UI Elements
+                    $('#label_input_jumlah').html('Berat Timbangan <span class="text-rose-500">*</span>');
+                    $('#satuan_input_jumlah').text('Kg');
+                    $('#keterangan_nominal').html('<i class="fas fa-info-circle mr-1"></i>Otomatis dihitung: (Berat Kg) x (Harga per 1 Kg) x 96%. (4% potongan Desa)');
+                    $('#sisa_poin_container').addClass('hidden');
+                    $('#btnMaxPoin').addClass('hidden');
+                }
+            }
+
+            $('#tabPoin').on('click', () => setMode('poin'));
+            $('#tabKg').on('click', () => setMode('kg'));
+
+            // Initial UI setup
+            setMode('poin');
+
+            // --- USER SELECTION & POIN MAX ---
+            $('#user_id').on('change', function() {
+                let selectedOption = $(this).find('option:selected');
+                maxPoin = parseFloat(selectedOption.data('poin')) || 0;
                 
-                // Ambil Berat
-                let rawBerat = $('#jml_sampah_perkg').val();
+                let hasilFormat = new Intl.NumberFormat('id-ID').format(maxPoin);
+                $('#sisa_poin_label').text(hasilFormat + " Poin");
 
-                // Parsing ke angka float
-                let cleanHarga = String(rawHarga).replace(/[^0-9.]/g, ''); 
-                let hargaPerKg = parseFloat(cleanHarga);
-                let berat = parseFloat(rawBerat);
+                // Restrict max poin if mode is poin
+                if(mode === 'poin') {
+                    let inputPoin = parseFloat($('#jml_sampah').val()) || 0;
+                    if (inputPoin > maxPoin) {
+                        $('#jml_sampah').val(maxPoin);
+                    }
+                }
+                hitungTotal();
+            });
 
-                // Hitung jika valid
-                if (!isNaN(hargaPerKg) && !isNaN(berat) && berat > 0) {
-                    // Rumus: (Harga x Berat) x 96%
-                    let total = (hargaPerKg * berat) * 0.96;
+            $('#btnMaxPoin').on('click', function() {
+                if(maxPoin > 0 && mode === 'poin') {
+                    $('#jml_sampah').val(maxPoin);
+                    hitungTotal();
+                }
+            });
 
-                    // Format Rupiah
-                    let hasilFormat = new Intl.NumberFormat('id-ID', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(total);
+            // --- KALKULASI TOTAL ---
+            function hitungTotal() {
+                let selectedOption = $('#jenis_sampah_id option:selected');
+                
+                // Get right price
+                let rawHarga = mode === 'poin' ? selectedOption.data('harga-poin') : selectedOption.data('harga-kg');
+                let hargaAcuan = parseFloat(rawHarga);
+                
+                let rawInput = $('#jml_sampah').val();
+                let jumlah = parseFloat(rawInput);
 
-                    // Set value
+                // Validation Poin
+                if (mode === 'poin' && jumlah > maxPoin) {
+                    jumlah = maxPoin;
+                    $('#jml_sampah').val(jumlah);
+                    alert("Jumlah poin yang ditukar tidak boleh melebihi sisa poin warga.");
+                }
+
+                if (!isNaN(hargaAcuan) && !isNaN(jumlah) && jumlah > 0) {
+                    let total = 0;
+                    if (mode === 'poin') {
+                        total = jumlah * hargaAcuan; // Poin tidak kena potongan 96%? Atau kena? Di instruksi: poin * harga. Let's make it 100% full.
+                    } else {
+                        total = (jumlah * hargaAcuan) * 0.96; // Setor manual kena potongan 96%
+                    }
+                    
+                    let hasilFormat = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(total);
                     $('#nominal').val(hasilFormat);
                 } else {
                     $('#nominal').val('');
                 }
             }
 
-            // Trigger Hitung
-            $('#jenis_sampah_id').on('change selectric:change', hitungTotal);
-            $('#jml_sampah_perkg').on('input keyup change', hitungTotal);
-            
-            // Jalankan sekali saat load
-            hitungTotal();
+            $('#jenis_sampah_id').on('change', hitungTotal);
+            $('#jml_sampah').on('input keyup', hitungTotal);
 
-            // ==========================================
-            // FIX PENTING: MENCEGAH DOUBLE SUBMIT
-            // ==========================================
+            // --- FORM SUBMIT ---
             $('#formTransaksi').on('submit', function(e) {
-                // Cek validitas form HTML5 (required, type number, dll)
                 if (this.checkValidity()) {
+                    if (mode === 'poin') {
+                        let jumlah = parseFloat($('#jml_sampah').val());
+                        if (jumlah > maxPoin) {
+                            alert("Jumlah poin melebihi sisa poin warga!");
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
                     let btn = $('#btnSubmit');
-                    
-                    // 1. Ubah teks tombol jadi Loading
-                    btn.html('<i class="fas fa-spinner fa-spin"></i> Memproses...');
-                    
-                    // 2. Disable tombol supaya tidak bisa diklik lagi
+                    btn.html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses Transaksi...');
                     btn.prop('disabled', true);
-                    
-                    // 3. Form lanjut dikirim ke server...
                     return true;
-                } else {
-                    // Jika tidak valid, biarkan browser menampilkan pesan error
-                    // Jangan disable tombol
                 }
             });
         });
     </script>
-@endsection
+@endpush

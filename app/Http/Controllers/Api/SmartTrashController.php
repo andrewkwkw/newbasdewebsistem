@@ -228,7 +228,51 @@ class SmartTrashController extends Controller
         DB::table('devices')->where('id', 1)->update([
             'status' => 'idle',
             'current_user_id' => null,
+            'message' => null, // Reset message juga
             'updated_at' => now()
         ]);
+    }
+
+    /**
+     * =========================================================================
+     * 5. [BARU] TERIMA LOG DARI PYTHON
+     * URL: POST /api/v1/device/log
+     * =========================================================================
+     */
+    public function deviceLog(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|max:255',
+        ]);
+
+        try {
+            DB::table('devices')->where('id', 1)->update([
+                'message' => $request->message,
+                'updated_at' => now()
+            ]);
+
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error'], 500);
+        }
+    }
+
+    /**
+     * =========================================================================
+     * 6. [BARU] CEK STATUS UNTUK WEB DASHBOARD
+     * URL: GET /api/device-status
+     * =========================================================================
+     */
+    public function deviceStatus()
+    {
+        try {
+            $device = DB::table('devices')->where('id', 1)->first();
+            return response()->json([
+                'status' => $device->status ?? 'idle',
+                'message' => $device->message ?? ''
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error'], 500);
+        }
     }
 }

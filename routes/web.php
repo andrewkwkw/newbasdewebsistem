@@ -7,10 +7,36 @@ use App\Http\Controllers\Admin\SetorSaldoController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+
+Route::get('/test-koneksi-vps', function () {
+    try {
+        $response = Http::withToken(config('services.smart_trash.token'))
+                        ->post(config('services.smart_trash.url'), [
+                            'pesan' => 'Halo, ini tes koneksi dari lokal!'
+                        ]);
+
+        if ($response->successful()) {
+            return 'Berhasil terhubung ke VPS! Respons: ' . $response->body();
+        } else {
+            return 'Gagal terhubung. Error: ' . $response->status() . ' - ' . $response->body();
+        }
+    } catch (\Exception $e) {
+        return 'Gagal terhubung (Tidak ada respon dari server). Error: ' . $e->getMessage();
+    }
+});
 
 Route::get('/', function () {
     return redirect('login');
 });
+
+Route::get('/privacy-policy', function () {
+    return view('privacy');
+})->name('privacy');
+
+Route::get('/terms-of-service', function () {
+    return view('terms');
+})->name('terms');
 
 // Route::get('/', function () {
 //     // Arahkan ke file view 'splash.blade.php' saat aplikasi pertama kali dibuka
@@ -71,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('is.role:2')->group(function () {
         Route::get('user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
+        Route::get('user/history', [UserController::class, 'history'])->name('user.history');
         Route::get('/profile/{id}/edit', [UserController::class, 'editProfile'])->name('users.profile.edit');
         Route::put('/users/profile/{id}', [UserController::class, 'updateProfile'])->name('users.profile.update');
         Route::get('/kartu-saya', [UserController::class, 'kartuSaya'])->name('kartu.saya');

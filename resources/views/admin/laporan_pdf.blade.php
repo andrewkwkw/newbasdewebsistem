@@ -27,7 +27,7 @@
 <body>
 
     <div class="header">
-        <h1>BANK SAMPAH DESA</h1>
+        <h1>PT RESIK PRIMA TEKNOLOJIA</h1>
         <p>Laporan Keuangan & Setoran Sampah</p>
         <p>Periode: {{ \Carbon\Carbon::parse($bulan)->isoFormat('MMMM Y') }}</p>
     </div>

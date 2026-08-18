@@ -53,7 +53,8 @@ class SetorSaldoController extends Controller
             'user_ids'        => 'required|array|min:1', 
             'user_ids.*'      => 'exists:users,id',
             'jenis_sampah_id' => 'required|exists:jenis_sampah,id',
-            'jml_sampah_perkg'=> 'required|numeric|min:0.01',
+            'jml_sampah'      => 'required|numeric|min:0.01',
+            'tipe_setoran'    => 'required|in:kg,poin'
         ]);
 
         $admin = Auth::user();
@@ -66,113 +67,126 @@ class SetorSaldoController extends Controller
             return back()->withErrors(['user_ids' => 'Admin tidak boleh mengirim ke diri sendiri!']);
         }
 
-        $beratKg     = (float) $request->jml_sampah_perkg;
+        $jumlahInput = (float) $request->jml_sampah;
         $jenisSampah = JenisSampah::findOrFail($request->jenis_sampah_id);
+        $tipe = $request->tipe_setoran;
+        
+        $penerima = User::findOrFail($targetUserId);
 
-        // Hitung Nominal
-        $nominalFull = $beratKg * $jenisSampah->harga_per_kg;
-        $nominal96   = $nominalFull * 0.96; 
+        $nominalAkhir = 0;
+        $desc = "";
+        
+        if ($tipe === 'poin') {
+            // Validasi Poin
+            if ($penerima->points < $jumlahInput) {
+                return back()->with('error', 'Poin warga tidak mencukupi untuk ditukar!');
+            }
+            // Poin * Harga Poin (Full 100%)
+            $nominalAkhir = $jumlahInput * $jenisSampah->harga_per_poin;
+            $desc = "Tukar " . $jumlahInput . " Poin Smart Trash ({$jenisSampah->nama_sampah})";
+        } else {
+            // Kg * Harga Kg (Dipotong 4%)
+            $nominalFull = $jumlahInput * $jenisSampah->harga_per_kg;
+            $nominalAkhir = $nominalFull * 0.96;
+            $desc = "Setor Manual {$jenisSampah->nama_sampah} seberat {$jumlahInput} Kg";
+        }
 
-        // --- [HAPUS BAGIAN INI] ---
-        // Tidak perlu cek saldo admin, karena uang dari sistem
-        // if ($admin->saldo < $nominal96) {
-        //    return back()->with('error', 'Saldo Admin Tidak Cukup! ...');
-        // }
-        // --------------------------
+        DB::transaction(function () use ($admin, $penerima, $nominalAkhir, $jumlahInput, $jenisSampah, $tipe, $desc) {
 
-        DB::transaction(function () use ($admin, $targetUserId, $nominal96, $beratKg, $jenisSampah) {
-
-            // --- [HAPUS BAGIAN INI] ---
-            // Jangan kurangi saldo admin
-            // User::where('id', $admin->id)->decrement('saldo', $nominal96);
-            // --------------------------
+            // Jika Tukar Poin, Potong poinnya!
+            if ($tipe === 'poin') {
+                $penerima->points -= $jumlahInput;
+                $penerima->save();
+                
+                // Catat history pemotongan poin di TrashLog
+                if (class_exists('\App\Models\TrashLog')) {
+                    \App\Models\TrashLog::create([
+                        'user_id' => $penerima->id,
+                        'amount'  => 1, // dummy
+                        'points'  => -$jumlahInput,
+                        'source'  => 'Redeem Poin',
+                    ]);
+                }
+            }
 
             // A. UPDATE SALDO USER (INCREMENT SAJA)
-            // Uang bertambah di user, seolah-olah "dicetak" oleh sistem atau diambil dari kas besar bank sampah
-            $penerima = User::find($targetUserId);
-            $penerima->increment('saldo', $nominal96);
+            $penerima->increment('saldo', $nominalAkhir);
 
             // B. CATAT TRANSAKSI (HANYA UNTUK USER)
             Transaction::create([
                 'user_id'         => $penerima->id,
                 'type'            => 'credit', // Credit = Uang Masuk ke User
-                'amount'          => $nominal96,
+                'amount'          => $nominalAkhir,
                 'jenis_sampah_id' => $jenisSampah->id,
-                'berat'           => $beratKg,
-                'description'     => "Terima setor {$jenisSampah->nama_sampah} {$beratKg} Kg (Diproses oleh {$admin->username})",
+                'berat'           => $jumlahInput, // Bisa kg, bisa poin (disatukan di field berat untuk kepraktisan db)
+                'description'     => $desc . " (Oleh {$admin->username})",
             ]);
 
             // C. CATAT RIWAYAT MASUK
             MasukUser::create([
                 'user_id'         => $penerima->id,
                 'jenis_sampah_id' => $jenisSampah->id,
-                'jml_sampah_perkg'=> $beratKg,
-                'uang'            => $nominal96,
+                'jml_sampah_perkg'=> $jumlahInput,
+                'uang'            => $nominalAkhir,
                 'admin_id'        => $admin->id, // Admin hanya tercatat sebagai petugas
             ]);
         });
 
-        return back()->with('success', 'Transaksi Berhasil! Saldo User bertambah Rp ' . number_format($nominal96));
+        return back()->with('success', 'Transaksi Berhasil! Saldo User bertambah Rp ' . number_format($nominalAkhir, 0, ',', '.'));
     }
 
 
     public function index(Request $request)
     {
-        // 1. Filter Bulan
         $bulan = $request->input('bulan', now()->format('Y-m'));
         $start = Carbon::parse($bulan)->startOfMonth();
         $end = Carbon::parse($bulan)->endOfMonth();
 
-        // 2. Ambil Data dari TrashLog (Bukan Transaction)
-        // Kita hapus filter 'admin_id' sementara supaya semua data warga terlihat
-        $transaksi = TrashLog::with('user')
+        // Ubah kembali menggunakan tabel Transaction (Setor Manual / Tukar Poin)
+        $transaksi = Transaction::with(['user', 'jenisSampah'])
             ->whereBetween('created_at', [$start, $end])
             ->latest()
             ->get();
 
-        // 3. HITUNG TOTAL POIN (Langsung dari kolom 'points')
-        $totalPoin = $transaksi->sum('points');
+        // Hapus null jenis sampah
+        $transaksi = $transaksi->filter(function ($t) {
+            return $t->jenisSampah !== null;
+        });
 
-        // 4. Total Sampah (Dalam Pcs/Item, karena Smart Trash hitungannya pcs)
-        $totalKg = $transaksi->sum('amount');
+        // Hitung total berat/poin yang disetor (kolom 'berat')
+        $totalPoin = $transaksi->sum('berat');
+        
+        // Hitung total uang
+        $totalRp = $transaksi->sum('amount');
 
-        // 5. Grouping Per Jenis Sampah
-        // Karena TrashLog biasanya tidak ada 'jenis_sampah_id', kita buat manual kategori "Botol Plastik"
-        // atau kita grouping berdasarkan 'source' jika ada.
-        $perJenis = collect([
-            [
-                'nama_sampah' => 'Botol Plastik (Smart Trash)',
-                'total_kg'    => $totalKg,
-                'total_poin'  => $totalPoin
-            ]
-        ]);
-
-        // 6. Grouping Per Nasabah
-        $perUser = $transaksi->groupBy('user_id')->map(function ($items) {
+        // Grouping Per Jenis Sampah
+        $perJenis = $transaksi->groupBy('jenis_sampah_id')->map(function ($row) {
+            $first = $row->first();
+            $poinSetor = $row->sum('berat');
+            $uang = $row->sum('amount');
             return [
-                'user'       => $items->first()->user->fullname ?? $items->first()->user->name ?? 'Warga Umum',
-                'total_kg'   => $items->sum('amount'),
-                'total_poin' => $items->sum('points'),
+                'nama_sampah' => $first->jenisSampah->nama_sampah,
+                'total_poin'  => $poinSetor,
+                'total_uang'  => $uang
             ];
-        })->sortByDesc('total_poin'); // Urutkan dari poin terbanyak
+        })->filter()->sortByDesc('total_poin');
 
-        // 7. Modifikasi Data Transaksi agar tidak Error di View
-        // View mengharapkan objek 'jenisSampah' dan 'harga_per_kg', kita inject manual
-        foreach($transaksi as $t) {
-            // Kita "pura-pura" membuat objek jenisSampah agar view tidak error
-            $t->jenisSampah = (object) [
-                'nama_sampah' => 'Botol Plastik',
-                'harga_per_kg' => $t->amount > 0 ? round($t->points / $t->amount) : 0 // Hitung rata-rata poin per item
+        // Grouping Per Nasabah
+        $perUser = $transaksi->groupBy('user_id')->map(function ($row) {
+            $first = $row->first();
+            $poinSetor = $row->sum('berat');
+            $uang = $row->sum('amount');
+            return [
+                'user'       => $first->user->fullname ?? $first->user->name ?? 'Warga Umum',
+                'total_poin' => $poinSetor,
+                'total_uang' => $uang
             ];
-            
-            // Map 'amount' (pcs) ke 'berat' agar view yang pakai $t->berat tetap jalan
-            $t->berat = $t->amount; 
-        }
+        })->filter()->sortByDesc('total_poin');
 
         return view('admin.laporan.index', compact(
             'bulan',
             'totalPoin',
-            'totalKg',
+            'totalRp',
             'perJenis',
             'perUser',
             'transaksi'

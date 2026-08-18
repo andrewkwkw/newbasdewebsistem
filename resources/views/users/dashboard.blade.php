@@ -95,7 +95,7 @@
                             </div>
                             Riwayat Aktivitas
                         </h3>
-                        <a href="#"
+                        <a href="{{ route('user.history') }}"
                             class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
                             Lihat Semua <i class="fas fa-arrow-right ml-1 text-xs"></i>
                         </a>
@@ -165,6 +165,29 @@
 
         </div>
     </div>
+
+    <!-- Real-time Status Modal -->
+    <div id="status-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="flex flex-col items-center text-center">
+                <div class="relative w-20 h-20 mb-6">
+                    <div class="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                    <i class="fas fa-camera text-2xl text-indigo-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Kamera Aktif</h3>
+                <p class="text-gray-500 mb-6 text-sm">Harap letakkan sampah Anda di depan kamera.</p>
+                
+                <div class="w-full bg-gray-50 rounded-xl p-4 border border-gray-100 text-left">
+                    <div class="flex items-center mb-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Live Status dari Alat</span>
+                    </div>
+                    <p id="live-status-text" class="text-gray-700 font-medium font-mono text-sm break-words">Menunggu respon Raspberry Pi...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -173,18 +196,42 @@
 
     {{-- SCRIPT TRIGGER DEVICE --}}
     <script>
+        let pollingInterval;
+
+        function pollDeviceStatus() {
+            fetch("{{ url('/api/device-status') }}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'idle') {
+                        // Alat sudah selesai
+                        clearInterval(pollingInterval);
+                        $('#status-modal').removeClass('flex').addClass('hidden');
+                        
+                        swal({
+                            title: "Selesai!",
+                            text: "Proses selesai. Poin Anda telah ditambahkan jika valid.",
+                            icon: "success",
+                            button: "Ok",
+                        }).then(() => {
+                            window.location.reload(); // Refresh untuk melihat poin baru
+                        });
+                    } else if (data.message) {
+                        // Update log text
+                        $('#live-status-text').text(data.message);
+                    }
+                })
+                .catch(err => console.error("Polling error:", err));
+        }
+
         function triggerDevice() {
             // 1. Ubah UI jadi Loading
             const btn = $('#btn-trigger');
 
-            // Simpan konten asli button jika perlu (optional)
-            // btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i>');
-            // Kita ubah styling sedikit untuk tailwind context
             btn.prop('disabled', true);
             btn.find('span:last-child').text('Memproses...');
             btn.find('i').removeClass('fa-power-off').addClass('fa-circle-notch fa-spin');
 
-            $('#loading-text').removeClass('hidden').addClass('flex'); // Show loading text
+            $('#loading-text').removeClass('hidden').addClass('flex');
 
             // 2. Kirim Request ke API Laravel
             const apiUrl = "{{ url('/api/trigger-device') }}";
@@ -213,13 +260,12 @@
                 .then(data => {
                     // === SUKSES ===
                     if (data.status === 'success') {
-                        swal({
-                            title: "Berhasil!",
-                            text: "Tempat sampah terbuka. Silakan masukkan sampah Anda.",
-                            icon: "success",
-                            button: false,
-                            timer: 3000
-                        });
+                        // Buka modal real-time status
+                        $('#live-status-text').text("Menunggu respon Raspberry Pi...");
+                        $('#status-modal').removeClass('hidden').addClass('flex');
+                        
+                        // Mulai polling setiap 1 detik
+                        pollingInterval = setInterval(pollDeviceStatus, 1000);
                     }
                 })
                 .catch(error => {
@@ -239,7 +285,7 @@
                     });
                 })
                 .finally(() => {
-                    // 3. Kembalikan UI seperti semula
+                    // 3. Kembalikan UI button seperti semula
                     setTimeout(() => {
                         btn.prop('disabled', false);
                         btn.find('span:last-child').text('AKTIFKAN ALAT');

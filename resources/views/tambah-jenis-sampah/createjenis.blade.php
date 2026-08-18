@@ -62,6 +62,26 @@
                 @enderror
             </div>
 
+            {{-- Input Harga per 1 Poin --}}
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-emerald-600 uppercase tracking-widest px-1">Harga per 1 Poin (Rp) - Smart Trash</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="text-emerald-500 font-bold text-sm">Rp</span>
+                    </div>
+                    <input type="number" 
+                           name="harga_per_poin" 
+                           class="block w-full pl-12 pr-4 py-3.5 bg-emerald-50 border @error('harga_per_poin') border-rose-500 @else border-emerald-100 @enderror rounded-2xl text-emerald-900 font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                           placeholder="Contoh: 20" 
+                           value="{{ old('harga_per_poin') }}" 
+                           required>
+                </div>
+                @error('harga_per_poin')
+                    <p class="text-[11px] text-rose-500 font-bold mt-1 px-1">{{ $message }}</p>
+                @enderror
+                <p class="text-[11px] text-emerald-600 px-1 italic">Harga ini digunakan saat warga menukarkan poin dari Smart Trash.</p>
+            </div>
+
             {{-- Input Admin --}}
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Petugas Admin Pengelola</label>

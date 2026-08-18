@@ -23,11 +23,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // URL: http://ip-server:8000/api/trigger-device
 Route::post('/trigger-device', [SmartTrashController::class, 'triggerDevice']);
 
+// URL: http://ip-server:8000/api/device-status
+Route::get('/device-status', [SmartTrashController::class, 'deviceStatus']);
+
 
 // ==============================================================================
 // 2. JALUR UNTUK ALAT / PYTHON (Raspberry Pi)
 // ==============================================================================
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware('api.secret')->group(function () {
 
     // GROUP DEVICE (Alat Bertanya & Lapor Status)
     Route::prefix('device')->group(function () {
@@ -36,9 +39,12 @@ Route::prefix('v1')->group(function () {
         // URL: http://ip-server:8000/api/v1/device/check-trigger
         Route::get('/check-trigger', [SmartTrashController::class, 'checkTrigger']);
 
-        // [BARU] Python Lapor: "Reset dong, gagal nih!"
         // URL: http://ip-server:8000/api/v1/device/reset
         Route::post('/reset', [SmartTrashController::class, 'resetStatus']);
+
+        // [BARU] Python Lapor Status Real-time
+        // URL: http://ip-server:8000/api/v1/device/log
+        Route::post('/log', [SmartTrashController::class, 'deviceLog']);
     });
 
     // GROUP TRANSACTION (Alat Mengirim Data Sampah)
