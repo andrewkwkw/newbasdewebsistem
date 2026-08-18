@@ -171,8 +171,8 @@
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
             <div class="flex flex-col items-center text-center">
                 <!-- Video Stream Area -->
-                <div class="w-full bg-gray-100 rounded-xl overflow-hidden mb-6 relative aspect-video shadow-inner">
-                    <img id="live-camera-feed" src="" alt="Kamera Live" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Kamera+Mati';">
+                <div class="w-full bg-gray-100 rounded-xl overflow-hidden mb-6 relative shadow-inner" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                    <img id="live-camera-feed" src="" alt="Kamera Live" class="w-full h-full object-cover" style="min-height: 220px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/640x480/eeeeee/999999?text=Kamera+Belum+Siap';">
                     <!-- Indikator merah kecil (REC) -->
                     <div class="absolute top-3 right-3 flex items-center bg-black/50 px-2 py-1 rounded-md backdrop-blur-sm">
                         <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-1"></div>
