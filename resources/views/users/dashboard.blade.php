@@ -170,14 +170,12 @@
     <div id="status-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
             <div class="flex flex-col items-center text-center">
-                <!-- Video Stream Area -->
-                <div class="w-full bg-gray-100 rounded-xl overflow-hidden mb-6 relative shadow-inner" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
-                    <img id="live-camera-feed" src="" alt="Kamera Live" class="w-full h-full object-cover" style="min-height: 220px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/640x480/eeeeee/999999?text=Kamera+Belum+Siap';">
-                    <!-- Indikator merah kecil (REC) -->
-                    <div class="absolute top-3 right-3 flex items-center bg-black/50 px-2 py-1 rounded-md backdrop-blur-sm">
-                        <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-1"></div>
-                        <span class="text-[10px] text-white font-bold">LIVE</span>
-                    </div>
+                
+                <!-- Loading Animation Area -->
+                <div class="relative w-20 h-20 mb-6">
+                    <div class="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                    <i class="fas fa-camera text-2xl text-indigo-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
                 </div>
 
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Kamera Aktif</h3>
@@ -203,7 +201,6 @@
     {{-- SCRIPT TRIGGER DEVICE --}}
     <script>
         let pollingInterval;
-        const RASPBERRY_PI_IP = "192.168.249.169"; // Ganti jika IP Raspberry Pi berubah
 
         function pollDeviceStatus() {
             fetch("{{ url('/api/device-status') }}")
@@ -213,7 +210,6 @@
                         // Alat sudah selesai
                         clearInterval(pollingInterval);
                         $('#status-modal').removeClass('flex').addClass('hidden');
-                        $('#live-camera-feed').attr('src', ''); // Matikan stream video
                         
                         swal({
                             title: "Selesai!",
@@ -268,9 +264,8 @@
                 .then(data => {
                     // === SUKSES ===
                     if (data.status === 'success') {
-                        // Buka modal real-time status dan set sumber video
+                        // Buka modal real-time status
                         $('#live-status-text').text("Menunggu respon Raspberry Pi...");
-                        $('#live-camera-feed').attr('src', `http://${RASPBERRY_PI_IP}:5000/video_feed?t=` + new Date().getTime());
                         $('#status-modal').removeClass('hidden').addClass('flex');
                         
                         // Mulai polling setiap 1 detik
